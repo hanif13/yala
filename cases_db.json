@@ -304,12 +304,5 @@
     "areaName": "Tha Sap",
     "priority": "critical",
     "scenario": "Flood"
-  },
-  {
-    "id": "line_1782489558908_145",
-    "gps": {
-      "lat": 6.551959653153085,
-      "lng": 101.28537816847961
-    }
   }
 ]
