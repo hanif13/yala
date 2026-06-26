@@ -75,7 +75,7 @@ function lineQuickReply(text: string, items: string[]) {
     quickReply: {
       items: items.map(label => ({
         type: 'action',
-        action: { type: 'message', label, text: label },
+        action: { type: 'message', label: label.substring(0, 20), text: label },
       })),
     },
   };
@@ -794,7 +794,7 @@ app.post('/api/line/webhook', express.raw({ type: '*/*' }), async (req, res) => 
         await lineReply(replyToken, [
           lineQuickReply(
             '⬇️ ขั้นที่ 4/8 — ท่านสงสัยว่าเป็นโรคอะไร? (เลือกหรือพิมพ์เอง)',
-            ['ไข้เลือดออก', 'COVID-19', 'ฉี่หนู (Leptospirosis)', 'ท้องร่วง', 'ไข้หวัดใหญ่', 'ผิวหนัง', 'อหิวา', 'มือเท้าปาก', 'อื่นๆ']
+            ['ไข้เลือดออก', 'COVID-19', 'ฉี่หนู', 'ท้องร่วง', 'ไข้หวัดใหญ่', 'ผิวหนัง', 'อหิวา', 'มือเท้าปาก', 'อื่นๆ']
           ),
         ]);
         break;
@@ -804,6 +804,7 @@ app.post('/api/line/webhook', express.raw({ type: '*/*' }), async (req, res) => 
         // Map Thai names to English for database
         const diseaseMap: Record<string, string> = {
           'ไข้เลือดออก': 'Dengue Fever',
+          'ฉี่หนู': 'Leptospirosis',
           'ฉี่หนู (leptospirosis)': 'Leptospirosis',
           'ท้องร่วง': 'Diarrhea',
           'ไข้หวัดใหญ่': 'Influenza',
@@ -842,7 +843,7 @@ app.post('/api/line/webhook', express.raw({ type: '*/*' }), async (req, res) => 
         await lineReply(replyToken, [
           lineQuickReply(
             '⬇️ ขั้นที่ 7/8 — ท่านอาศัยอยู่ในพื้นที่ใด?',
-            ['สะเตงกลาง (Sateng Center)', 'สะเตงนอก (Sateng Nok)', 'ท่าสาป (Tha Sap)', 'อื่นๆ']
+            ['สะเตงกลาง', 'สะเตงนอก', 'ท่าสาป', 'อื่นๆ']
           ),
         ]);
         break;
@@ -850,6 +851,9 @@ app.post('/api/line/webhook', express.raw({ type: '*/*' }), async (req, res) => 
 
       case 'ASK_AREA': {
         const areaMap: Record<string, string> = {
+          'สะเตงกลาง': 'Sateng Center',
+          'สะเตงนอก': 'Sateng Nok',
+          'ท่าสาป': 'Tha Sap',
           'สะเตงกลาง (sateng center)': 'Sateng Center',
           'สะเตงนอก (sateng nok)': 'Sateng Nok',
           'ท่าสาป (tha sap)': 'Tha Sap',
