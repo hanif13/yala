@@ -421,7 +421,7 @@ app.get('/api/realtime', (req, res) => {
 // Authentication Endpoint
 app.post('/api/login', (req, res) => {
   const { email, password } = req.body;
-  
+
   if (email === 'naeef.benyakal@gmail.com' && password === 'NFLANDii403190') {
     return res.json({
       success: true,
@@ -459,7 +459,7 @@ app.post('/api/cases', (req, res) => {
   let scenario: ScenarioMode = 'Normal';
 
   const diseaseNormalized = (payload.disease || '').toLowerCase();
-  
+
   // Classify Scenario
   if (
     diseaseNormalized.includes('leptospirosis') || diseaseNormalized.includes('ฉี่หนู') ||
@@ -517,8 +517,8 @@ app.post('/api/cases', (req, res) => {
       demands: payload.personalInfo?.demands || 'ไม่มี'
     },
     clinicalInfo: {
-      symptoms: Array.isArray(payload.clinicalInfo?.symptoms) 
-        ? payload.clinicalInfo.symptoms 
+      symptoms: Array.isArray(payload.clinicalInfo?.symptoms)
+        ? payload.clinicalInfo.symptoms
         : [payload.clinicalInfo?.symptoms || 'Fever', 'Fatigue'],
       days: payload.clinicalInfo?.days ? parseInt(payload.clinicalInfo.days) : Math.floor(Math.random() * 5) + 1,
       contactHistory: payload.clinicalInfo?.contactHistory || 'No known contact history reported.'
@@ -549,7 +549,7 @@ app.post('/api/cases', (req, res) => {
 app.get('/api/cases', (req, res) => {
   const authHeader = req.headers.authorization || '';
   const isOfficial = authHeader === 'Bearer mock-jwt-token-yala-epidemic-sec' || req.query.role === 'official';
-  
+
   const cases = loadCases();
 
   if (isOfficial) {
@@ -593,7 +593,7 @@ app.get('/api/cases', (req, res) => {
 app.put('/api/cases/:id', (req, res) => {
   const { id } = req.params;
   const { status, disease, priority, severity } = req.body;
-  
+
   const authHeader = req.headers.authorization || '';
   const isOfficial = authHeader === 'Bearer mock-jwt-token-yala-epidemic-sec';
 
@@ -622,7 +622,7 @@ app.put('/api/cases/:id', (req, res) => {
     cases[caseIndex].disease = disease;
     // Auto-update scenario, priority, and severity based on new disease if not explicitly overridden
     const diseaseNormalized = disease.toLowerCase();
-    
+
     let targetScenario: ScenarioMode = 'Normal';
     if (
       diseaseNormalized.includes('leptospirosis') || diseaseNormalized.includes('ฉี่หนู') ||
@@ -843,7 +843,7 @@ app.post('/api/line/webhook', express.raw({ type: '*/*' }), async (req, res) => 
         await lineReply(replyToken, [
           lineQuickReply(
             '⬇️ ขั้นที่ 7/8 — ท่านอาศัยอยู่ในพื้นที่ใด?',
-            ['สะเตงกลาง', 'สะเตงนอก', 'ท่าสาป', 'อื่นๆ']
+            ['สะเตง', 'สะเตงนอก', 'ท่าสาป', 'อื่นๆ']
           ),
         ]);
         break;
