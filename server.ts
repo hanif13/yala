@@ -23,6 +23,7 @@ const LINE_CHANNEL_SECRET = process.env.LINE_CHANNEL_SECRET || '';
 type LineStep =
   | 'IDLE'
   | 'ASK_NAME'
+  | 'ASK_PHONE'
   | 'ASK_AGE'
   | 'ASK_GENDER'
   | 'ASK_DISEASE'
@@ -35,6 +36,7 @@ interface LineSession {
   step: LineStep;
   data: {
     name?: string;
+    phone?: string;
     age?: number;
     gender?: string;
     disease?: string;
@@ -742,7 +744,7 @@ app.post('/api/line/webhook', express.raw({ type: '*/*' }), async (req, res) => 
           lineText(
             '📋 เริ่มต้นการแจ้งอาการป่วย\n\n' +
             'กรุณากรอกข้อมูลทีละขั้น ระบบจะส่งข้อมูลให้เจ้าหน้าที่สาธารณสุขโดยอัตโนมัติ\n\n' +
-            '⬇️ ขั้นที่ 1/8 — กรุณาระบุ ชื่อ-นามสกุล ของท่าน'
+            '⬇️ ขั้นที่ 1/9 — กรุณาระบุ ชื่อ-นามสกุล ของท่าน'
           ),
         ]);
       } else {
@@ -767,9 +769,18 @@ app.post('/api/line/webhook', express.raw({ type: '*/*' }), async (req, res) => 
 
       case 'ASK_NAME': {
         session.data.name = text;
+        session.step = 'ASK_PHONE';
+        await lineReply(replyToken, [
+          lineText('✅ ชื่อ: ' + text + '\n\n⬇️ ขั้นที่ 2/9 — กรุณาระบุ เบอร์โทรศัพท์ติดต่อ'),
+        ]);
+        break;
+      }
+
+      case 'ASK_PHONE': {
+        session.data.phone = text;
         session.step = 'ASK_AGE';
         await lineReply(replyToken, [
-          lineText('✅ ชื่อ: ' + text + '\n\n⬇️ ขั้นที่ 2/8 — กรุณาระบุ อายุ (ปี) เช่น 35'),
+          lineText('✅ เบอร์โทร: ' + text + '\n\n⬇️ ขั้นที่ 3/9 — กรุณาระบุ อายุ (ปี) เช่น 35'),
         ]);
         break;
       }
@@ -783,7 +794,7 @@ app.post('/api/line/webhook', express.raw({ type: '*/*' }), async (req, res) => 
         session.data.age = age;
         session.step = 'ASK_GENDER';
         await lineReply(replyToken, [
-          lineQuickReply('⬇️ ขั้นที่ 3/8 — กรุณาเลือก เพศ ของท่าน', ['ชาย', 'หญิง', 'ไม่ระบุ']),
+          lineQuickReply('⬇️ ขั้นที่ 4/9 — กรุณาเลือก เพศ ของท่าน', ['ชาย', 'หญิง', 'ไม่ระบุ']),
         ]);
         break;
       }
@@ -793,7 +804,7 @@ app.post('/api/line/webhook', express.raw({ type: '*/*' }), async (req, res) => 
         session.step = 'ASK_DISEASE';
         await lineReply(replyToken, [
           lineQuickReply(
-            '⬇️ ขั้นที่ 4/8 — ท่านสงสัยว่าเป็นโรคอะไร? (เลือกหรือพิมพ์เอง)',
+            '⬇️ ขั้นที่ 5/9 — ท่านสงสัยว่าเป็นโรคอะไร? (เลือกหรือพิมพ์เอง)',
             ['ไข้เลือดออก', 'COVID-19', 'ฉี่หนู', 'ท้องร่วง', 'ไข้หวัดใหญ่', 'ผิวหนัง', 'อหิวา', 'มือเท้าปาก', 'อื่นๆ']
           ),
         ]);
@@ -816,7 +827,7 @@ app.post('/api/line/webhook', express.raw({ type: '*/*' }), async (req, res) => 
         session.step = 'ASK_SYMPTOMS';
         await lineReply(replyToken, [
           lineText(
-            '⬇️ ขั้นที่ 5/8 — กรุณาระบุ อาการที่พบ ของท่าน\n' +
+            '⬇️ ขั้นที่ 6/9 — กรุณาระบุ อาการที่พบ ของท่าน\n' +
             '(สามารถพิมพ์หลายอาการ คั่นด้วยจุลภาค เช่น ไข้สูง, ปวดศีรษะ, ผื่นขึ้น)'
           ),
         ]);
@@ -827,7 +838,7 @@ app.post('/api/line/webhook', express.raw({ type: '*/*' }), async (req, res) => 
         session.data.symptoms = text.split(/[,،،,]/u).map(s => s.trim()).filter(Boolean);
         session.step = 'ASK_DAYS';
         await lineReply(replyToken, [
-          lineText('⬇️ ขั้นที่ 6/8 — ท่านมีอาการมาแล้วกี่วัน? (ระบุเป็นตัวเลข เช่น 3)'),
+          lineText('⬇️ ขั้นที่ 7/9 — ท่านมีอาการมาแล้วกี่วัน? (ระบุเป็นตัวเลข เช่น 3)'),
         ]);
         break;
       }
@@ -842,7 +853,7 @@ app.post('/api/line/webhook', express.raw({ type: '*/*' }), async (req, res) => 
         session.step = 'ASK_AREA';
         await lineReply(replyToken, [
           lineQuickReply(
-            '⬇️ ขั้นที่ 7/8 — ท่านอาศัยอยู่ในพื้นที่ใด?',
+            '⬇️ ขั้นที่ 8/9 — ท่านอาศัยอยู่ในพื้นที่ใด?',
             ['สะเตง', 'สะเตงนอก', 'ท่าสาป', 'อื่นๆ']
           ),
         ]);
@@ -862,7 +873,7 @@ app.post('/api/line/webhook', express.raw({ type: '*/*' }), async (req, res) => 
         session.step = 'ASK_CONTACT';
         await lineReply(replyToken, [
           lineText(
-            '⬇️ ขั้นที่ 8/8 — ประวัติการสัมผัสโรค\n' +
+            '⬇️ ขั้นที่ 9/9 — ประวัติการสัมผัสโรค\n' +
             'เช่น "ไปตลาดนัด", "สัมผัสน้ำท่วม", "ใกล้ชิดผู้ป่วย" หรือพิมพ์ "ไม่มี" หากไม่มี'
           ),
         ]);
@@ -874,7 +885,7 @@ app.post('/api/line/webhook', express.raw({ type: '*/*' }), async (req, res) => 
 
         // ── All data collected — save case ──────────────────────────────────
         const cases = loadCases();
-        const { disease, name, age, gender, symptoms, days, areaName, contactHistory } = session.data;
+        const { disease, name, phone, age, gender, symptoms, days, areaName, contactHistory } = session.data;
         const { severity, priority, scenario } = classifyDisease(disease || 'Unknown');
 
         const defaultLat = 6.5399 + (Math.random() - 0.5) * 0.025;
@@ -887,7 +898,7 @@ app.post('/api/line/webhook', express.raw({ type: '*/*' }), async (req, res) => 
             name: name || 'ไม่ระบุ',
             age: age || 0,
             gender: gender || 'ไม่ระบุ',
-            phone: 'LINE Chat',
+            phone: phone || 'LINE Chat',
             status: 'Quarantined',
             occupation: 'ไม่ระบุ',
             residencyStatus: 'คนในพื้นที่',
